@@ -6,6 +6,16 @@
                 "isEnabled": true,
                 "excludedTypes": "Request"
             }
+        },
+        "console": {
+            "isEnabled": "true"
+        },
+        "logLevel": {
+            "default": "Warning",
+            "Function.HelloWorldHttpTrigger": "Debug",
+
+            "AzFuncUni.Http.Impl.AuthorizationHandler": "Debug",
+            "System.Net.Http.HttpClient": "None"
         }
     }
 }

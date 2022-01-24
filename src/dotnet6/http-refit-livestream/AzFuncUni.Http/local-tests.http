@@ -16,7 +16,7 @@ Content-Type: text/plain
 
 This is a plain-text content.
 
-### Exercise 2 - strongly-typed
+### Exercise 2+ - strongly-typed response
 
 POST http://localhost:7071/api/HelloWorldHttpTrigger?code=AzFuncUni.Http
 Content-Type: text/plain

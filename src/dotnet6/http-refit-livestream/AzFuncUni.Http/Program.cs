@@ -26,6 +26,7 @@ namespace AzFuncUni.Http
 			services
 				.AddHttpClient("HttpBinOrgApi", Configure)
 				.AddTypedClient(c => RestService.For<IHttpBinOrgApi>(c))
+				.AddHttpMessageHandler<AuthorizationHandler>()
 				.AddHttpMessageHandler<MockedUnauthorizedHandler>()
 				;
 
@@ -40,6 +41,7 @@ namespace AzFuncUni.Http
 
 			// a delegating handler must be registered to the dependency container
 
+			services.AddTransient<AuthorizationHandler>();
 			services.AddTransient<MockedAuthenticationHandler>();
 			services.AddTransient<MockedUnauthorizedHandler>();
 		}
