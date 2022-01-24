@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 public interface IHttpBinOrgApi
 {
     [Get("/status/{code}")]
-    Task<HttpContent> StatusCodes(int code);
+    Task<GetRequestResponse> StatusCodes(int code);
 
     [Post("/post")]
-    Task<HttpContent> GetRequest();
+    Task<GetRequestResponse> GetRequest();
 }

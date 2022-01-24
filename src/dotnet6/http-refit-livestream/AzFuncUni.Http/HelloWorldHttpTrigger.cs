@@ -27,15 +27,12 @@ namespace AzFuncUni.Http
 
 			try
 			{
-				var content = await _client.GetRequest();
-				var text = await content.ReadAsStringAsync();
-
-				response.Headers.Add("Content-Type", "text/json; charset=utf-8");
-				await response.WriteStringAsync(text);
+				var result = await _client.GetRequest();
+				await response.WriteAsJsonAsync(result);
 			}
 			catch (Refit.ApiException)
 			{
-                throw;
+				throw;
 			}
 
 			return response;
