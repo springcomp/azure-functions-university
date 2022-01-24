@@ -1,0 +1,4 @@
+### Exercise 1 POST:
+GET http://localhost:7071/api/HelloWorldHttpTrigger
+
+###
