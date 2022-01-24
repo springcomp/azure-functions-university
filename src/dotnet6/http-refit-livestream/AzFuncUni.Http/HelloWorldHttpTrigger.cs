@@ -1,13 +1,15 @@
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
 namespace AzFuncUni.Http
 {
-	public class HelloWorldHttpTrigger
+	public class HelloWorldHttpTrigger 
 	{
 		private readonly ILogger _logger;
 		private readonly IHttpBinOrgApi _client;
@@ -24,10 +26,12 @@ namespace AzFuncUni.Http
 			_logger.LogInformation("C# HTTP trigger function processed a request.");
 
 			var response = req.CreateResponse(HttpStatusCode.OK);
+			var collection = HttpUtility.ParseQueryString(req.Url.Query);
+			var queryStrings = collection.ToDictionary();
 
 			try
 			{
-				var result = await _client.GetRequest();
+				var result = await _client.GetRequest(query: queryStrings);
 				await response.WriteAsJsonAsync(result);
 			}
 			catch (Refit.ApiException)
@@ -36,6 +40,19 @@ namespace AzFuncUni.Http
 			}
 
 			return response;
+		}
+	}
+	public static class NameValueCollectionExtensions
+	{
+		public static IDictionary<string, string> ToDictionary(this NameValueCollection collection)
+		{
+			var dict = new Dictionary<string, string>();
+			foreach (string key in collection.AllKeys)
+			{
+				dict.Add(key, collection[key]);
+			}
+
+			return dict;
 		}
 	}
 }
