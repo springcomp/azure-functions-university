@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Azure.Functions.Worker;
@@ -34,9 +35,11 @@ namespace AzFuncUni.Http
 				var result = await _client.GetRequest(req.Body, query: queryStrings);
 				await response.WriteAsJsonAsync(result);
 			}
-			catch (Refit.ApiException)
+			catch (Refit.ApiException e)
 			{
-				throw;
+				var errorResponse = HttpResponseData.CreateResponse(req);
+				errorResponse.StatusCode = e.StatusCode;
+				return errorResponse;
 			}
 
 			return response;

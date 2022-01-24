@@ -13,5 +13,6 @@ public interface IHttpBinOrgApi
     Task<GetRequestResponse> StatusCodes(int code);
 
     [Post("/post")]
+    [Headers("Authorization: Bearer")]
     Task<GetRequestResponse> GetRequest(Stream content = null, [Query] IDictionary<string, string> query = default);
 }

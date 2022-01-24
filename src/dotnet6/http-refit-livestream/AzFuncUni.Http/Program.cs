@@ -1,9 +1,9 @@
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Azure.Functions.Worker.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
+using System;
+using System.Net.Http;
+using AzFuncUni.Http.Impl;
 
 namespace AzFuncUni.Http
 {
@@ -13,7 +13,7 @@ namespace AzFuncUni.Http
 		{
 			var builder = new HostBuilder()
 				.ConfigureFunctionsWorkerDefaults()
-                .ConfigureServices(ConfigureServices)
+				.ConfigureServices(ConfigureServices)
 				;
 
 			var host = builder.Build();
@@ -24,12 +24,30 @@ namespace AzFuncUni.Http
 		private static void ConfigureServices(HostBuilderContext builder, IServiceCollection services)
 		{
 			services
-				.AddHttpClient("HttpBinOrgApi", (provider, client) =>
-				{
-					client.BaseAddress = new System.Uri(HttpBinOrgApiHost);
-					client.DefaultRequestHeaders.Add("Accept", "application/json");
-				})
-				.AddTypedClient(c => RestService.For<IHttpBinOrgApi>(c));
+				.AddHttpClient("HttpBinOrgApi", Configure)
+				.AddTypedClient(c => RestService.For<IHttpBinOrgApi>(c))
+				.AddHttpMessageHandler<MockedUnauthorizedHandler>()
+				;
+
+			// configuring a strongly-typed service contract
+			// for authenticating the requests against httpbin.org
+
+			services
+				.AddHttpClient("Authentication", Configure)
+				.AddTypedClient(c => RestService.For<IHttpBinOrgApiAuth>(c))
+				.AddHttpMessageHandler<MockedAuthenticationHandler>()
+				;
+
+			// a delegating handler must be registered to the dependency container
+
+			services.AddTransient<MockedAuthenticationHandler>();
+			services.AddTransient<MockedUnauthorizedHandler>();
+		}
+
+		private static void Configure(IServiceProvider provider, HttpClient client)
+		{
+			client.BaseAddress = new System.Uri(HttpBinOrgApiHost);
+			client.DefaultRequestHeaders.Add("Accept", "application/json");
 		}
 	}
 }
