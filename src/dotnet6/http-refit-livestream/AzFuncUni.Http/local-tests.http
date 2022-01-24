@@ -1,4 +1,26 @@
-### Exercise 1 POST:
+### Exercise 1 GET:
 GET http://localhost:7071/api/HelloWorldHttpTrigger
+
+### Exercise 2 Overview
+
+GET http://httpbin.org/status/200
+
+###
+
+GET http://httpbin.org/status/404
+
+###
+
+POST http://httpbin.org/post?hello=world
+Content-Type: text/plain
+
+This is a plain-text content.
+
+### Exercise 2 - strongly-typed
+
+POST http://localhost:7071/api/HelloWorldHttpTrigger?code=AzFuncUni.Http
+Content-Type: text/plain
+
+AzureFunctionsUniversity
 
 ###
