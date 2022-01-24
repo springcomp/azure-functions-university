@@ -29,6 +29,8 @@ namespace AzFuncUni.Http.Impl
 				return Task.FromResult(unauthorized);
 			}
 
+			// proceed to flow the request to the next stage in the pipeline
+
 			return base.SendAsync(request, cancellationToken);
 		}
 	}
