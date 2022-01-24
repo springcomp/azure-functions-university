@@ -1,5 +1,6 @@
 using Refit;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -12,5 +13,5 @@ public interface IHttpBinOrgApi
     Task<GetRequestResponse> StatusCodes(int code);
 
     [Post("/post")]
-    Task<GetRequestResponse> GetRequest([Query] IDictionary<string, string> query = default);
+    Task<GetRequestResponse> GetRequest(Stream content = null, [Query] IDictionary<string, string> query = default);
 }

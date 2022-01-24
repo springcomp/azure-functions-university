@@ -31,7 +31,7 @@ namespace AzFuncUni.Http
 
 			try
 			{
-				var result = await _client.GetRequest(query: queryStrings);
+				var result = await _client.GetRequest(req.Body, query: queryStrings);
 				await response.WriteAsJsonAsync(result);
 			}
 			catch (Refit.ApiException)
