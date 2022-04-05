@@ -1,0 +1,17 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "4-authenticating-http-calls",
+  "steps": [
+    {
+      "title": "Goal",
+      "description": "In this exercise, you’ll learn how to implement custom authentication when sending HTTP requests."
+    },
+    {
+      "title": "GetAccessTokenRequest",
+      "file": "../../../src/dotnet6/http-refit-auth/AzFuncUni.Http/Http/AuthenticationHandler.cs",
+      "description": "The `AuthenticationHandler` class is a custom `DelegatingHandler` that implements custom authentication.",
+      "line": 3
+    }
+  ],
+  "isPrimary": true
+}
