@@ -9,7 +9,8 @@
             "enableLiveMetrics": true
         },
         "logLevel": {
-            "default": "Trace"
+            "default": "Warning",
+            "Function.HelloWorldHttpTrigger.User": "Information"
         }
     }
 }

@@ -162,7 +162,7 @@ In the next section, you will dive into those properties in a bit more details.
 
 ## n. Log levels and categories
 
-In this section, you will learn the basics of _Application Insights_ and its _AppTraces_ log store.
+In this section, you will learn the basics of _Application Insights_ and its _traces_ log store.
 You will also learn about _Log Categories_ and how to filter log output based upon _Log Levels_ and categories.
 
 ### Overview
@@ -202,7 +202,118 @@ In the previous exercise, you have seen how setting the default log level for th
 
 ### Categories
 
+Logs are divided into multiple _categories_, which form a set of hierachical namespaces.
+Splitting logs into multiple categories allows you to associate appropriate log levels to each category.
+
+By default, each `ILogger` instance is associated with a category hierarchy based upon the full type name of its corresponding dotnet class.
+
+As a [rule of thumb](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line#log-category), each dotnet class has a full type name that represents a category hierarchy for the purpose of logging. However, functions in your Function App behave slightly differently.
+
+Before running the code from your functions, the Functions Runtime first runs the code associated with any trigger and input bindings associated with parameters to your functions. Likewise, after having executed your code, the Functions Runtime runs the code associated with return and output bindings that you may have specified.
+
+For this reason each function decorated using the [`FunctionNameAttribute`](https://learn.microsoft.com/en-us/azure/azure-functions/functions-dotnet-class-library?tabs=v4%2Ccmd#methods-recognized-as-functions) class emits logs associated with the following category hierarchy:
+
+- `Functions.<function-name>`: category associated with logs from your triggers and bindings used by your function.
+- `Functions.<function-name>.User` category associated with logs from your code using `ILogger` instance supplied as a parameter to your function.
+
+In this exercise, you will discover log categories and learn how to filter log output based upon categories using appropriate log levels.
+
 ### Steps
+
+1. Open the Azure Portal and navigate to App Insights.
+2. On the left pane, click on `Logs` option under the `Monitoring` topic.
+3. Close the `Welcome to Application Insights` screen.
+4. On the `Queries` screen, uncheck the `Always show Queries` option and close the screen.
+
+    > 🔎 **Observation** - This is the main interface in App Insights. You will use this interface to write and execute queries on collected telemetry. This screen has a left panel that displays the App Insights tables, amongst which you should see one named `traces`.
+
+    > 📝 **Tip** - Double-click on the `traces` table to start a new query and click the `▶️ Run` button. You should see a list of logs in the results pane at the bottom of your screen.
+
+5. Use a query to discover log categories emitted by your application:
+
+    Replace the query with the following text:
+
+    ```sql
+    traces 
+    | summarize count(message) by tostring(customDimensions.Category)
+    | order by customDimensions_Category
+    ```
+
+    > 📝 **Tip** - App Insights uses a SQL-like query language named [Kusto Query Language](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/) (KQL).
+
+    > 🔎 **Observation** - The query breaks down the number of logs associated with each category. This is an easy way to get hold of the category associated with each log. You may want to use this method if you see spurious logs that you would like to filter in the future.
+    
+    Please, note that most log categories share only a handful of common "top-level" prefixes. In practice, the most common category hierarchies are:
+
+	- `Azure`
+        - `Azure.Core`
+    - `Microsoft`
+        - `Microsoft.Azure`
+        - `Microsoft.Extensions`
+        - `Microsoft.AspNetCore`
+    - `Host`
+        - `Host.General`
+        - `Host.Startup`
+    - `Function`
+        - `Function.<function-name>`
+            - `Function.<function-name>.User`
+    - `System`
+
+
+6. Armed with this knowledge, filter the log output from your application.
+
+    In the `host.json` file, update the `loglevel` section to look like:
+
+    ```json
+    "logLevel": {
+        "default": "Warning",
+        "Function.HelloWorldHttpTrigger.User": "Information"
+    }
+    ```
+
+7. Compile and run the application.
+8. Call the HTTP-triggered function multiple times.
+
+    ```http
+    POST http://localhost:7071/api/HelloWorldHttpTrigger
+    ```
+
+9. In App Insights, change the `Time range` to `Last 30 minutes` and run the log category break down query again.
+
+    ```sql
+    traces 
+    | summarize count(message) by tostring(customDimensions.Category)
+    | order by customDimensions_Category
+    ```
+
+    > 🔎 **Observation** - After a few minutes, you should see a dramatic reduction in the amount of categories under which your application logs. In fact, given enough time, only logs associated with the `Function.HelloWorldHttpTrigger.User` category hierarchy should be emitted.
+
+10. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
+
+11. Update log levels while the application is running
+
+    Once deployed to Azure, you Function App `host.json` file cannot easily be modified. To change the level associated with a given log category while the application is running, you can update the Function App’s _App Setttings_.
+
+    Notice that in `host.json`, the full "path" to a particular log level directive looks like:
+
+    `` logging / loglevel / <category> ``
+
+    To represent this hiearchy in _App Settings_, use a `__` double-underscore separator and replace the `.` separator with a single `_` underscore character.
+
+    When run locally, _App Settings_ are specified in `local.settings.json`.
+    Update this file and add the following two properties:
+
+    ```json
+    {
+        "Values": {
+            …
+            "LOGGING__LOGLEVEL__DEFAULT": "DEBUG",
+            "LOGGING__LOGLEVEL__FUNCTION_HELLOWORLDHTTPTRIGGER": "TRACE"
+        }
+    }
+    ```
+
+    // TODO: from Visual Studio Code
 
 ## 4. Structured logging
 
