@@ -298,7 +298,11 @@ In this exercise, you will discover log categories and learn how to filter log o
 
     `` logging / loglevel / <category> ``
 
+    This is anchored into an implicit `AzureFunctionsJobHost` top-level section.
+
     To represent this hiearchy in _App Settings_, use a `__` double-underscore separator and replace the `.` separator with a single `_` underscore character.
+
+    On Azure, when _App Settings_ are changed, the Function App restarts.
 
     When run locally, _App Settings_ are specified in `local.settings.json`.
     Update this file and add the following two properties:
@@ -307,15 +311,29 @@ In this exercise, you will discover log categories and learn how to filter log o
     {
         "Values": {
             …
-            "LOGGING__LOGLEVEL__DEFAULT": "DEBUG",
-            "LOGGING__LOGLEVEL__FUNCTION_HELLOWORLDHTTPTRIGGER": "TRACE"
+            "AzureFunctionsJobHost__Logging__LogLevel__default": "Debug",
+            "AzureFunctionsJobHost__Logging__LogLevel__Function__HelloWorldHttpTrigger": "Trace"
         }
     }
     ```
 
-    // TODO: from Visual Studio Code
+12. Compile and run the application
+13. Call the HTTP-triggered function multiple times.
+
+    > 🔎 **Observation** - Head over to App Insights in Azure Portal and run a query from the _Logs_ authoring page. You can also display the _Live Metrics_ dashboard for more lively feedback.
+
+
+You now know how to add logs to your application, and understand how to efficiently use categories and log levels to both limit the quantity of logs emitted by the application at any one time – this helps reduce costs and helps support staff by preventing unwanted noise.
+
+You also understand how to update log levels for particular categories to help troubleshoot issues that may happen after the application is deployed to Azure.
+
+In the following section, you will improve logs by emitting structured output.
 
 ## 4. Structured logging
+
+### Event identifiers
+
+### Additional properties
 
 In this exercise, …
 
