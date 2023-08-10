@@ -213,8 +213,8 @@ Before running the code from your functions, the Functions Runtime first runs th
 
 For this reason each function decorated using the [`FunctionNameAttribute`](https://learn.microsoft.com/en-us/azure/azure-functions/functions-dotnet-class-library?tabs=v4%2Ccmd#methods-recognized-as-functions) class emits logs associated with the following category hierarchy:
 
-- `Functions.<function-name>`: category associated with logs from your triggers and bindings used by your function.
-- `Functions.<function-name>.User` category associated with logs from your code using `ILogger` instance supplied as a parameter to your function.
+- `Functions.<function-name>`: category associated with logs from triggers and bindings used by your function.
+- `Functions.<function-name>.User` category associated with logs from your code using the `ILogger` instance initialized in the constructor of your function class.
 
 In this exercise, you will discover log categories and learn how to filter log output based upon categories using appropriate log levels.
 
