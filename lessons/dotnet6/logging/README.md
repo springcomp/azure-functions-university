@@ -331,11 +331,19 @@ In the following section, you will improve logs by emitting structured output.
 
 ## 4. Structured logging
 
+In this exercise, …
+
 ### Event identifiers
 
-### Additional properties
 
-In this exercise, …
+
+### Including additional log properties
+
+// TODO: _logger.BeginScope(IEnumerable<KeyValuePair<string, object>>)
+
+### Adding static log properties
+
+// TODO: ITelemetryInitializer
 
 ### Steps
 
