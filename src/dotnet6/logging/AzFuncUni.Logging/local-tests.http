@@ -1,0 +1,2 @@
+### Exercise 1:
+POST http://localhost:7071/api/HelloWorldHttpTrigger?name=AzureFunctionsUniversity
