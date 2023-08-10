@@ -10,6 +10,7 @@ This lesson consists of the following exercises:
 |---|---
 |0|[Prerequisites](#0-prerequisites)
 |1|[Creating a Function App](#1-creating-a-function-app)
+|2|[Logging to Application Insights](#2-logging-to-application-insights)
 
 
 > 📝 **Tip** - If you're stuck at any point you can have a look at the [source code](../../../src/dotnet6/http/AzFuncUni.Logging) in this repository.
@@ -25,6 +26,7 @@ This lesson consists of the following exercises:
 | Azure Functions Core Tools | 1-6
 | VS Code with Azure Functions extension| 1-6
 | REST Client for VS Code or Postman | 1-6
+| Azure Subscription | 2-6
 
 See [.NET 6 prerequisites](../prerequisites/README.md) for more details.
 
@@ -69,20 +71,113 @@ This exercise is a condensed version of the
     > 🔎 **Observation** - You should receive a `200 OK` success response.
 
 
+## 2. Logging to Application Insights
+
+You may have noticed that some lines have been printed to the Console each time the HTTP function is triggered. Unfortunately, the Console log output is very limited and does not offer much details on the structure of logs.
+
+Most Azure Functions end up logging to Azure Monitor. In particular, _Application Insights_ is a comprehensive Application Performance Monitoring component of Azure Monitor that, amgonst other things, collects telemetry from a running application. Logs − or traces − are one of many signals of telemetry that _Application Insights_ collects.
+
+In this section, you will learn the basics of _Application Insights_ and its _Live Metrics_ dashboard.
+
+### Steps
+
+1. Navigate to the Azure Portal and create [a new resource group](https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/Microsoft.ResourceGroup) named `AzFuncUni`, for instance.
+
+2. Navigate to the newly created resource group and create [a new _Application Insights_](https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/Microsoft.AppInsights) resource. This may also create a _Log Analytics Workspace_ resource.
+
+3. Go to the newly created resource and notice the `Essentials` section, at the top of the center pane. Please take note of the `Instrumentation Key` and `Connection String` properties.
+
+4. Back to your local working folder, create a new `local.settings.json` project file and initialize its content with the following JSON object:
+
+```json
+{
+    "IsEncrypted": false,
+    "Values": {
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true;",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "<paste-the-instrumentation-key>",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "<paste-the-connection-string>"
+    }
+}
+```
+
+> 📝 **Tip** - The `APPINSIGHTS_INSTRUMENTATIONKEY` property is being deprecated. However, at the time of writing, it is still necessary to enable _Live Metrics_ on the Azure Portal when the application is run locally.
+
+5. Open the `host.json` file and replace its content with:
+
+```json
+{
+    "version": "2.0",
+    "logging": {
+        "applicationInsights": {
+            "samplingSettings": {
+                "isEnabled": true,
+                "excludedTypes": "Request"
+            },
+            "enableLiveMetrics": true
+        },
+        "logLevel": {
+            "default": "Trace"
+        }
+    }
+}
+```
+
+Our changes enable integration with the _Live Metrics_ dashboard associated with the _Application Insights_ resource that we will refer to from now on as “App Insights”, for short. We also have lowered the default _Log Level_ to `Trace` so that virtually every log emitted from the application goes out unfiltered.
+
+6. Compile and run the application again.
+
+7. From the Azure Portal, navigate to App Insights and display the _Live Metrics_ dashboard. You can find `Live Metrics` as one of the options available on the left pane, under the `Investigate` topic.
+
+Wait a couple dozen of seconds for the web page to refresh and display the dashboard.
+
+> 📝 **Tip** - Some ad blockers are known to prevent the dashboard from displaying. If you have μBlock₀, you may see a `Data is temporarily inaccessible` red banner, for instance. Make sure to disable your ad blocker for the _Live Metrics_ page to display properly.
+
+Once the dashboard displays, notice that your machine is listed as one of the servers currently connected to App Insights.
+
+8. On you local machine, call the HTTP-triggered function a couple of times.
+
+    ```http
+    POST http://localhost:7071/api/HelloWorldHttpTrigger
+    ```
+
+    > 🔎 **Observation** - You should notice some spikes of activity in the _Live Metrics_ dashboard and see a host of logs being recorded on the right `Sample telemetry` pane.
+
+From the right pane, locate and click on one of the recorded logs, with the following message text: `"C# HTTP trigger function processed a request"`.
+
+Details from the selected log are displayed on the lower right pane. In particular, notice the following two properties:
+
+- `Category`: `Function.HelloWorldHttpTrigger.User`
+- `LogLevel`: `Information`
+
+Along with their messages, those are amongst the most important properties from the collected logs.
+In the next section, you will dive into those properties in a bit more details.
+
+9. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
+
 ## n. Title
+
+In this section, you will learn the basics of _Application Insights_ and its _AppTraces_ log store.
+You will also learn about _Log Categories_ and how to filter log output based upon _Log Levels_ and categories.
+
+### Steps
+
+## n. Homework
 
 In this exercise, …
 
 ### Steps
 
-## n. Title
+## n. Cleanup
 
-In this exercise, …
-
-### Steps
-
-## n. Title
-
-In this exercise, …
+In this exercise, you will cleanup Azure resources to prevent unwanted recurring charges.
 
 ### Steps
+
+1. Navigate to the Azure Portal locate and delete the `AzFuncUni` resource group. This will automatically remove all resources that have been created as part of this lesson. For the record, you may need to remove:
+
+- The default _Log Analytics Workspace_ resource.
+- The test _Application Insights_ resource.
+- The resource group.
+
+2. Remove the _Function App_ resource you may have deployed when doing your homework.

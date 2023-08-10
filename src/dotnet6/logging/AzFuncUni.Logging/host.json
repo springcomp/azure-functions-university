@@ -5,7 +5,11 @@
             "samplingSettings": {
                 "isEnabled": true,
                 "excludedTypes": "Request"
-            }
+            },
+            "enableLiveMetrics": true
+        },
+        "logLevel": {
+            "default": "Trace"
         }
     }
 }
