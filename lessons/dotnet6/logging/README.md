@@ -160,7 +160,7 @@ In the next section, you will dive into those properties in a bit more details.
 
 9. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
 
-## n. Log levels and categories
+## 3. Log levels and categories
 
 In this section, you will learn the basics of _Application Insights_ and its _traces_ log store.
 You will also learn about _Log Categories_ and how to filter log output based upon _Log Levels_ and categories.
