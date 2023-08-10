@@ -12,6 +12,11 @@ This lesson consists of the following exercises:
 |1|[Creating a Function App](#1-creating-a-function-app)
 |2|[Logging to Application Insights](#2-logging-to-application-insights)
 |3|[Log levels and categories](#3-log-levels-and-categories)
+|4|[Structured logging](#4-structured-logging)
+|5|[Distributed tracing](#5-distributed-tracing)
+|6|[Homework](#6-homework)
+|7|[Cleanup Azure resources](#7-cleanup-azure-resources)
+|8|[More Info](#8-more-info)
 
 > 📝 **Tip** - If you're stuck at any point you can have a look at the [source code](../../../src/dotnet6/http/AzFuncUni.Logging) in this repository.
 
@@ -26,7 +31,7 @@ This lesson consists of the following exercises:
 | Azure Functions Core Tools | 1-6
 | VS Code with Azure Functions extension| 1-6
 | REST Client for VS Code or Postman | 1-6
-| Azure Subscription | 2-6
+| Azure Subscription | 2-7
 
 See [.NET 6 prerequisites](../prerequisites/README.md) for more details.
 
@@ -199,7 +204,25 @@ In the previous exercise, you have seen how setting the default log level for th
 
 ### Steps
 
-## n. Cleanup Azure resources
+## 4. Structured logging
+
+In this exercise, …
+
+### Steps
+
+## 5. Distributed tracing
+
+In this exercise, …
+
+### Steps
+
+## 6. Homework
+
+In this exercise, …
+
+### Steps
+
+## 7. Cleanup Azure resources
 
 In this exercise, you will cleanup Azure resources to prevent unwanted recurring charges.
 
@@ -212,3 +235,7 @@ In this exercise, you will cleanup Azure resources to prevent unwanted recurring
 - The resource group.
 
 2. Remove the _Function App_ resource you may have deployed when doing your homework.
+
+## 8. More info
+
+- [Log Levels Explained](https://betterstack.com/community/guides/logging/log-levels-explained/)
