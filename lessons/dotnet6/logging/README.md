@@ -11,7 +11,7 @@ This lesson consists of the following exercises:
 |0|[Prerequisites](#0-prerequisites)
 |1|[Creating a Function App](#1-creating-a-function-app)
 |2|[Logging to Application Insights](#2-logging-to-application-insights)
-
+|3|[Log levels and categories](#3-log-levels-and-categories)
 
 > 📝 **Tip** - If you're stuck at any point you can have a look at the [source code](../../../src/dotnet6/http/AzFuncUni.Logging) in this repository.
 
@@ -155,20 +155,51 @@ In the next section, you will dive into those properties in a bit more details.
 
 9. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
 
-## n. Title
+## n. Log levels and categories
 
 In this section, you will learn the basics of _Application Insights_ and its _AppTraces_ log store.
 You will also learn about _Log Categories_ and how to filter log output based upon _Log Levels_ and categories.
 
+### Overview
+
+> 📝 **Tip** - App Insights is a comprehensive Application Performance Monitoring (APM) solution. As such, it does a lot more than collecting traces from a running application. In this lesson, you will mostly focus on interacting with App Insights using .NET's [Microsoft.Extensions.Logging.ILogger](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line) abstraction.
+
+As you have seen on the previous section, each log is associated with a set of properties, two of which are its _Category_ and _Log Level_.
+
+#### Log levels
+
+The log level is a measure of how critical or urgent an event reported by the application is. Using an appropriate log level, you can separate logs that simply convey useful information on how your application behaves from errors that are raised as part of its execution.
+
+More importantly, log levels offer a way to regulate the amount of data that is transmitted to your monitoring system. For App Insights, this is a good way to limit the charges incurred by the service.
+
+When troubleshooting is needed, additional insights can be gained by increasing the level of logs momentarily. This can be done dynamically without impacting the running application.
+
+When to use what level for logging falls outside the scope of this lesson.
+However, you may like [this simple chart](https://stackoverflow.com/a/64806781) that I found online.
+
+![](log_levels.png)
+
+Credit: [Taco Jan Osinga](https://stackoverflow.com/users/3476764/taco-jan-osinga) (2020) - [When to use the different log levels](https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels) - [Stack Overflow](https://stackoverflow.com/).
+
+The [ILogger](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.loglevel) abstraction used within Azure Functions defines the following log levels:
+
+- `LogLevel.Trace`
+- `LogLevel.Debug`
+- `LogLevel.Information`
+- `LogLevel.Warning`
+- `LogLevel.Error`
+- `LogLevel.Critical`
+- `LogLevel.None`
+
+Using `LogLevel.None` effectively disables log output.
+
+In the previous exercise, you have seen how setting the default log level for the entire application to `"Trace"` in the `host.json` file dramatically increased the amount of traces emitted when running the application. Changing the default level is a crude way to limit the quantity of logs. Later in this exercise, you will learn to configure log levels for particular _categories_ of logs.
+
+### Categories
+
 ### Steps
 
-## n. Homework
-
-In this exercise, …
-
-### Steps
-
-## n. Cleanup
+## n. Cleanup Azure resources
 
 In this exercise, you will cleanup Azure resources to prevent unwanted recurring charges.
 
