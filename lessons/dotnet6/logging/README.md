@@ -92,14 +92,12 @@ In this section, you will learn the basics of _Application Insights_ and its _Li
 
 3. Go to the newly created resource and notice the `Essentials` section, at the top of the center pane. Please take note of the `Instrumentation Key` and `Connection String` properties.
 
-4. Back to your local working folder, create a new `local.settings.json` project file and initialize its content with the following JSON object:
+4. Back to your local working folder, open the `local.settings.json` project file and add two corresponding properties in the `Values` section:
 
 ```json
 {
-    "IsEncrypted": false,
     "Values": {
-        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-        "AzureWebJobsStorage": "UseDevelopmentStorage=true;",
+        …
         "APPINSIGHTS_INSTRUMENTATIONKEY": "<paste-the-instrumentation-key>",
         "APPLICATIONINSIGHTS_CONNECTION_STRING": "<paste-the-connection-string>"
     }
@@ -140,7 +138,7 @@ Wait a couple dozen of seconds for the web page to refresh and display the dashb
 
 Once the dashboard displays, notice that your machine is listed as one of the servers currently connected to App Insights.
 
-8. On you local machine, call the HTTP-triggered function a couple of times.
+8. On your local machine, call the HTTP-triggered function a couple of times.
 
     ```http
     POST http://localhost:7071/api/HelloWorldHttpTrigger
@@ -167,7 +165,7 @@ You will also learn about _Log Categories_ and how to filter log output based up
 
 ### Overview
 
-> 📝 **Tip** - App Insights is a comprehensive Application Performance Monitoring (APM) solution. As such, it does a lot more than collecting traces from a running application. In this lesson, you will mostly focus on interacting with App Insights using .NET's [Microsoft.Extensions.Logging.ILogger](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line) abstraction.
+> 📝 **Tip** - App Insights is a comprehensive Application Performance Monitoring (APM) solution. As such, it does a lot more than collecting traces from a running application. In this lesson, you will mostly focus on interacting with App Insights using .NET's [Microsoft.Extensions.Logging.ILogger](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging) abstraction.
 
 As you have seen on the previous section, each log is associated with a set of properties, two of which are its _Category_ and _Log Level_.
 
@@ -207,7 +205,7 @@ Splitting logs into multiple categories allows you to associate appropriate log 
 
 By default, each `ILogger` instance is associated with a category hierarchy based upon the full type name of its corresponding dotnet class.
 
-As a [rule of thumb](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line#log-category), each dotnet class has a full type name that represents a category hierarchy for the purpose of logging. However, functions in your Function App behave slightly differently.
+As a [rule of thumb](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging#log-category), each dotnet class has a full type name that represents a category hierarchy for the purpose of logging. However, functions in your Function App behave slightly differently.
 
 Before running the code from your functions, the Functions Runtime first runs the code associated with any trigger and input bindings associated with parameters to your functions. Likewise, after having executed your code, the Functions Runtime runs the code associated with return and output bindings that you may have specified.
 
@@ -318,12 +316,12 @@ In this exercise, you will discover log categories and learn how to filter log o
     ```
 
 12. Compile and run the application
-13. Call the HTTP-triggered function multiple times.
+13. Call the HTTP-triggered function a couple of times.
 
     > 🔎 **Observation** - Head over to App Insights in Azure Portal and run a query from the _Logs_ authoring page. You can also display the _Live Metrics_ dashboard for more lively feedback.
 
 
-You now know how to add logs to your application, and understand how to efficiently use categories and log levels to both limit the quantity of logs emitted by the application at any one time – this helps reduce costs and helps support staff by preventing unwanted noise.
+You now know how to add logs to your application, and understand how to efficiently use categories and log levels to limit the quantity of logs emitted by the application at any one time – this helps reduce costs and helps support staff by preventing unwanted noise.
 
 You also understand how to update log levels for particular categories to help troubleshoot issues that may happen after the application is deployed to Azure.
 
@@ -335,11 +333,102 @@ In this exercise, …
 
 ### Event identifiers
 
+Above a given log level, most application logs are related to _events_ reported by the application. Typically, errors raised by an application are associated with an identifier and a code.
+
+The `ILogger` abstraction supports this general principle and allows to associate an [`EventId`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.eventid) when logging.
+
+1. In your project, create a new [`AppEvents.cs`](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging#log-event-id) file with the following content:
+
+    ```csharp
+    using Microsoft.Extensions.Logging;
+
+    internal static class AppEvents
+    {
+        private static readonly EventId _httpTriggerProcessed
+            = new EventId(1001, "http-trigger-processed");
+
+        public static EventId HttpTriggerProcessed
+            => _httpTriggerProcessed;
+    }
+    ```
+
+    This defines a new `EventId` with numeric identifier `1001` and name – or "code" – `"http-trigger-processed"`.
+    		
+2. Update the `HelloWorldHttpTrigger` function to include the new event to the log:
+
+    ```csharp
+    _logger.LogInformation(
+        AppEvents.HttpTriggerProcessed,
+        "C# HTTP trigger function processed a request."
+        );
+    ```
+
+3. Compile, and run the application.
+4. Call the HTTP-triggered function a few times.
+
+    ```http
+    POST http://localhost:7071/api/HelloWorldHttpTrigger?name=AzureFunctionsUniversity
+    ```
+    
+5. Navigate to App Insights `Log` page and run the following query:
+
+    ```sql
+    traces 
+    | project timestamp, message, customDimensions
+    | order by timestamp desc
+    ```
+
+    > 🔎 **Observation** - After a few short minutes, you will see that new logs emitted by your application. Expand one of the most recent logs and expand its `customDimensions` structure further. Please, note that a new `EventName` property has been attached to the log.
 
 
 ### Including additional log properties
 
 // TODO: _logger.BeginScope(IEnumerable<KeyValuePair<string, object>>)
+
+In this section, you will include the `name` query string parameter into the log output.
+
+1. In `HelloWorldHttpTrigger.cs`, the `Run` method receives `req` parameter of type [`HttpRequestData`](https://docs.microsoft.com/dotnet/api/microsoft.azure.functions.worker.http.httprequestdata?view=azure-dotnet) class. To retrieve the query string parameters, you need the `HttpUtility.ParseQueryString()` method. The `HttpUtility` class lives in the `System.Web` namespace, so add this to the using directives at the top of the file:
+
+    ```csharp
+    using System.Web;
+    ```
+
+2. To read the `name` query string value, use the `ParseQueryString()` method directly above the `_logger.LogInformation(...)` line:
+
+    ```csharp
+    var queryStringCollection = HttpUtility.ParseQueryString(req.Url.Query);
+    var name = queryStringCollection["name"];
+    ```
+
+3. Now that a name value is extracted from the query string it can be used in the log output:
+			
+    ```csharp
+    _logger.LogInformation(
+        "C# HTTP trigger function processed a request from {Name}.",
+        name
+        );
+    ```
+
+    The first parameter to `LogInformation` is known as a _message template_. It features a `{Name}` placeholder as the name of a new property associated with the log output. Any number of placeholders can be used in the message template.
+
+    The `name` parameter and any other property values must then be specified, _in the same order_ as they appear as placeholders in the message template.
+
+4. _
+
+5. Compile and run the application.
+6. Call the HTTP-triggered function two or three times.
+
+    ```http
+    POST http://localhost:7071/api/HelloWorldHttpTrigger?name=AzureFunctionsUniversity
+    ```
+
+7. _ head over to App Insights
+
+    ```sql
+    traces 
+    | project timestamp, message, customDimensions
+    | order by timestamp desc
+    ```
 
 ### Adding static log properties
 

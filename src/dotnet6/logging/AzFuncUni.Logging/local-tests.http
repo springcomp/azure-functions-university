@@ -1,2 +1,8 @@
-### Exercise 1:
+### Exercises 1-3
+POST http://localhost:7071/api/HelloWorldHttpTrigger
+
+### Exercise 4 
 POST http://localhost:7071/api/HelloWorldHttpTrigger?name=AzureFunctionsUniversity
+
+### Exercise 4 - missing mandatory '?name' query string parameter
+POST http://localhost:7071/api/HelloWorldHttpTrigger
