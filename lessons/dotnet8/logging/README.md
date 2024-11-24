@@ -15,7 +15,7 @@ This lesson consists of the following exercises:
 |4|[Cleanup Azure resources](#4-cleanup-azure-resources)
 |5|[More Info](#5-more-info)
 
-> 📝 **Tip** - If you're stuck at any point you can have a look at the [source code](../../../src/dotnet8/http/AzFuncUni.Logging) in this repository.
+> 📝 **Tip** - If you're stuck at any point you can have a look at the [source code](../../../src/dotnet8/logging/AzFuncUni.Logging) in this repository.
 
 > 📝 **Tip** - If you have questions or suggestions about this lesson, feel free to [create a Lesson Q&A discussion](https://github.com/marcduiker/azure-functions-university/discussions/categories/lesson-q-a) here on GitHub.
 
