@@ -10,7 +10,7 @@
       "title": "Connecting to Application Insights",
       "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/local.settings.json",
       "description": "The `APPLICATIONINSIGHTS_CONNECTION_STRING` app setting selects the connection string used to connect to Azure Application Insights.\r\n\r\nYou can find the value for this setting by navigating to the Azure Portal, and locating the Application Insights resource under considration. There, notice `Essentials` section, at the top of the center pane.\r\nThat’s where you can find the `Instrumentation Key` and `Connection String` properties.",
-      "line": 7
+      "line": 6
     },
     {
       "title": "Configuring the Functions Runtime host",
@@ -21,7 +21,7 @@
     {
       "title": "Configuring the log levels",
       "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/host.json",
-      "description": "The Functions Runtime host receives requests for logging from your function app worker process using gRPC.\r\n\r\nThe `logging/loglevel` section from the `host.json` file allows you to filter logs based on their categories.",
+      "description": "The Functions Runtime host uses the `host.json` file to configure configure logging for its own activity, including the behaviour of your input bindings.\r\n\r\nIn this lesson, were are also sharing the `host.json` log configuration for the worker process itself. That’s where you define the log level associated with each category.",
       "line": 12 
     },
     {
@@ -40,24 +40,30 @@
       "title": "Using statements",
       "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/Program.cs",
       "description": "These _using_ statements at the top of the source file are required to enable logging to Application Insights.\r\n\r\nNote that most of those statements are generic-enough; that’s because most features are packaged using extension classes located in a limited number of well-known namespaces.",
-      "line": 5
+      "line": 6
+    },
+    {
+      "title": "Reading and configuring log levels and categories",
+      "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/Program.cs",
+      "description": "Those instructions load the `logging` section from the `host.json` configuration file into a temporary variable.Then, passing this variable to `Logging.AddConfiguration()` configures log levels and categories accordingly.",
+      "line": 19
     },
     {
       "title": "Logging to Application Insights",
       "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/Program.cs",
       "description": "Those instructions enable logging to ApplicationInsights.\r\n\r\nThe `AddApplicationInsightsTelemetryWorkerService` method enables connection to Application Insights from _worker_ processes such as non-HTTP workloads, background tasks and console applications and is not specific to Function Apps.\r\n\r\nThe `ConfigureFunctionsApplicationInsights` method is a simple method provided by the Azure Functions .NET Worker SDK to properly setup the Function App for logging to Application Insights.",
-      "line": 15
+      "line": 25
     },
     {
       "title": "Remove logging constraints for debugging purposes",
       "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/Program.cs",
       "description": "In order to help reduce cost of your cloud infrastructure, the Application Insights SDK adds a default logging filter that instructs `ILogger` to capture logs with a severity of `Warning` or more.\r\n\r\nIn this lesson, that rule is removed so that logging using lower levels, such as `Information` can be sent and recorded into Application Insights.",
-      "line": 27
+      "line": 34 
     },
     {
       "title": "Selecting a category for logging",
       "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/HelloWorldHttpTrigger.cs",
-      "description": "Most of the work so far involved installing NuGet dependencies and configuring them appropriately upon startup of the worker process.\r\n\r\nIn the program, a developer can use the `ILogger` abstraction to focus on logging – what, and how – without worrying about specific details related to where those logs are sent.\r\n\r\nThe specific instance of that logger for the class is specified as a generic parameter to the `ILogger<T>` interface. Here, this ties the logger to a _Category_ that is the fully qualified name of the class, _i.e_ `AzFuncUni.Logging.HelloWordHttpTrigger`.",
+      "description": "Most of the work so far involved installing NuGet dependencies and configuring them appropriately upon startup of the worker process.\r\n\r\nIn the program, a developer can use the `ILogger` abstraction to focus on logging – what, and how – without worrying about specific details related to where those logs are sent.\r\n\r\nThe specific instance of that logger for the class is specified as a generic parameter to the `ILogger<T>` interface. Here, this ties the logger to a _CategoryName_ that is the fully qualified name of the class, _i.e_ `AzFuncUni.Logging.HelloWordHttpTrigger`.",
       "line": 10
     },
     {
