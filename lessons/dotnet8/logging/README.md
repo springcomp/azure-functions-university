@@ -25,10 +25,10 @@ This lesson consists of the following exercises:
 
 | Prerequisite | Exercise
 | - | -
-| Azure Functions Core Tools | 1-6
-| VS Code with Azure Functions extension| 1-6
-| REST Client for VS Code or Postman | 1-6
-| Azure Subscription | 2-7
+| Azure Functions Core Tools | 1-5
+| VS Code with Azure Functions extension| 1-5
+| REST Client for VS Code or Postman | 1-5
+| Azure Subscription | 2-5
 
 See [.NET 8 prerequisites](../prerequisites/README.md) for more details.
 
@@ -77,9 +77,33 @@ This exercise is a condensed version of the
 
 You may have noticed that some lines have been printed to the Console each time the HTTP function is triggered. Unfortunately, the Console log output is very limited and does not offer much details on the structure of logs.
 
-Most Azure Functions end up logging to Azure Monitor. In particular, _Application Insights_ is a comprehensive Application Performance Monitoring component of Azure Monitor that, amgonst other things, collects telemetry from a running application. Logs − or traces − are one of many signals of telemetry that _Application Insights_ collects.
+Most Azure Functions end up logging to Azure Monitor. In particular, _Application Insights_ is a comprehensive Application Performance Monitoring component of Azure Monitor that, amongst other things, collects telemetry from a running application. Logs − or traces − are one of many signals of telemetry that _Application Insights_ collects.
 
-In this section, you will learn the basics of _Application Insights_ and its _Live Metrics_ dashboard.
+### Overview
+
+Before diving into the code for this exercise, it is critical to understand how your Function App works as it directly drives the configuration for logging to _Application Insights_ successfully.
+
+Azure Functions is a compute infrastructure that runs your _functions-as-a-service_ workload
+through the _Functions Runtime Host_ process.
+
+The Function App itself is a .NET Console application that runs as a separate process referred to as the _Worker_ process. 
+By linking to the `Microsoft.Azure.Functions.Worker` NuGet package, the program starts a remote-process server and waits for the
+communication from the host using the [gRPC](https://grpc.io/) protocol.
+
+![](./isolated-worker-process.png)
+
+You may already be familiar with the `host.json` file that is used to configure the host.
+
+By default, a Function App running as an isolated worker process does not use a separate configuration
+file and relies entirely on environment variables and application settings in Azure. As you will see later
+in this lesson, however, it is often desirable to use a separate file for the log configuration.
+
+As your isolated worker process runs – as its name suggests – in a separate process from the host,
+it needs its own file to store its own settings and configurations for logging. In this lesson, the
+program will load the log (a subset of) the configuration from the `host.json` file,
+making it a shared file for both the host and the worker process itself.
+
+In the following section, you will learn the basics of _Application Insights_ and its _Live Metrics_ dashboard.
 
 ### Steps
 
@@ -87,7 +111,7 @@ In this section, you will learn the basics of _Application Insights_ and its _Li
 
 2. Navigate to the newly created resource group and create [a new _Application Insights_](https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/Microsoft.AppInsights) resource. This may also create a _Log Analytics Workspace_ resource.
 
-3. Go to the newly created resource and notice the `Essentials` section, at the top of the center pane. Please take note of the `Instrumentation Key` and `Connection String` properties.
+3. Go to the newly created resource and notice the `Essentials` section, at the top of the center pane. Please take note of the and `Connection String` property.
 
 4. Back to your local working folder, open the `local.settings.json` project file and add two corresponding properties in the `Values` section:
 
@@ -95,13 +119,10 @@ In this section, you will learn the basics of _Application Insights_ and its _Li
 {
     "Values": {
         …
-        "APPINSIGHTS_INSTRUMENTATIONKEY": "<paste-the-instrumentation-key>",
         "APPLICATIONINSIGHTS_CONNECTION_STRING": "<paste-the-connection-string>"
     }
 }
 ```
-
-> 📝 **Tip** - The `APPINSIGHTS_INSTRUMENTATIONKEY` property is being deprecated. However, at the time of writing, it is still necessary to enable _Live Metrics_ on the Azure Portal when the application is run locally.
 
 5. Open the `host.json` file and replace its content with:
 
@@ -111,7 +132,7 @@ In this section, you will learn the basics of _Application Insights_ and its _Li
     "logging": {
         "applicationInsights": {
             "samplingSettings": {
-                "isEnabled": true,
+                "isEnabled": false,
                 "excludedTypes": "Request"
             },
             "enableLiveMetrics": true
@@ -138,16 +159,20 @@ Logging to Application Insights using lower severity requires an explicit overri
     dotnet add package Microsoft.Azure.Functions.Worker.ApplicationInsights
     ```
 
+    > 📝 **Tip** - The `Microsoft.ApplicationInsights.WorkerService` adjusts logging behavior of the worker (_i.e_ your Function App) to no longer emit logs through the host application (_i.e_ the Functions Runtime host controlling your Function App). Once installed, logs are sent directly to application insights from the worker process instead.
 
 7. Open the `Program.cs` and add some using directives at the top of the file:
 
     ```c#
     using Microsoft.Azure.Functions.Worker;
+    using Microsoft.Azure.Functions.Worker.Builder;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     ```
 
-8. Further down in `Program.cs`, uncomment the relevant portion of the code.
+8. Further down in `Program.cs`, replace the commented code with the relevant portion of the code.
 
     *Replace*
 
@@ -161,6 +186,15 @@ Logging to Application Insights using lower severity requires an explicit overri
     *With*
 
     ```c#
+    // Reading and configuring log levels and categories
+    
+    var hostJsonLoggingSection = new ConfigurationBuilder()
+        .AddJsonFile("host.json")
+        .Build()
+        .GetSection("logging");
+    
+    builder.Logging.AddConfiguration(hostJsonLoggingSection);
+    
     // Logging to Application Insights
     
     builder.Services
@@ -200,13 +234,11 @@ Once the dashboard displays, notice that your machine is listed as one of the se
 
 From the right pane, locate and click on one of the recorded logs, with the following message text: `"C# HTTP trigger function processed a request"`.
 
-Details from the selected log are displayed on the lower right pane. In particular, notice the following two properties:
+Details from the selected log are displayed on the lower right pane. In particular, notice the following property:
 
-- `Category`: `Function.HelloWorldHttpTrigger.User`
-- `LogLevel`: `Information`
+- `CategoryName`: `AzFuncUni.Logging.HelloWorldHttpTrigger`
 
-Along with their messages, those are amongst the most important properties from the collected logs.
-In the next section, you will dive into those properties in a bit more details.
+Along with their messages, the _Severity Level_ and log _Category_ are amongst the most important properties from the collected logs. In the next section, you will dive into those properties in a bit more details.
 
 12. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
 
@@ -219,7 +251,7 @@ You will also learn about _Log Categories_ and how to filter log output based up
 
 > 📝 **Tip** - App Insights is a comprehensive Application Performance Monitoring (APM) solution. As such, it does a lot more than collecting traces from a running application. In this lesson, you will mostly focus on interacting with App Insights using .NET's [Microsoft.Extensions.Logging.ILogger](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging) abstraction.
 
-As you have seen on the previous section, each log is associated with a set of properties, two of which are its _Category_ and _Log Level_ properties.
+As you have seen on the previous section, each log is associated with a set of properties, two of which are its _CategoryName_ and _Severity Level_ properties.
 
 #### Log levels
 
@@ -247,6 +279,8 @@ The [ILogger](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.
 - `LogLevel.None`
 
 Using `LogLevel.None` effectively disables log output.
+
+> 📝 **Tip** - The .NET `ILogger` abstraction defines the various log levels listed above. However, in App Insights, this translates to the concept of _Severity Level_. There is a one-to-one correspondance between the .NET `LogLevel` and App Insights’ _Severity Levels_.
 
 In the previous exercise, you have seen how setting the default log level for the entire application to `"Trace"` in the `host.json` file dramatically increased the amount of traces emitted when running the application. Changing the default level is a crude way to limit the quantity of logs. Later in this exercise, you will learn to configure log levels for particular _categories_ of logs.
 
@@ -285,8 +319,8 @@ In this exercise, you will discover log categories and learn how to filter log o
 
     ```sql
     traces 
-    | summarize count(message) by tostring(customDimensions.Category)
-    | order by customDimensions_Category
+    | summarize count(message) by tostring(customDimensions.CategoryName)
+    | order by customDimensions_CategoryName
     ```
 
     > 📝 **Tip** - App Insights uses a SQL-like query language named [Kusto Query Language](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/) (KQL).
@@ -333,8 +367,8 @@ In this exercise, you will discover log categories and learn how to filter log o
 
     ```sql
     traces 
-    | summarize count(message) by tostring(customDimensions.Category)
-    | order by customDimensions_Category
+    | summarize count(message) by tostring(customDimensions.CategoryName)
+    | order by customDimensions_CategoryName
     ```
 
     > 🔎 **Observation** - After a few minutes, you should see a dramatic reduction in the amount of categories under which your application logs. In fact, given enough time, only logs associated with the `AzFuncUni.Logging.HelloWorldHttpTrigger` category hierarchy should be emitted.
@@ -364,6 +398,7 @@ In this exercise, you will discover log categories and learn how to filter log o
             …
             "AzureFunctionsJobHost__Logging__LogLevel__default": "Debug",
             "AzureFunctionsJobHost__Logging__LogLevel__Function__HelloWorldHttpTrigger": "Trace",
+            "Logging__LogLevel__Default": "Warning",
             "Logging__LogLevel__AzFuncUni__Logging__HelloWorldHttpTrigger": "Trace"
         }
     }
