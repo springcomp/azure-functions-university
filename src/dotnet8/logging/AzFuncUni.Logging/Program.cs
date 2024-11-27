@@ -9,15 +9,6 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-// Reading and configuring log levels and categories
-
-var hostJsonLoggingSection = new ConfigurationBuilder()
-    .AddJsonFile("host.json")
-    .Build()
-    .GetSection("logging");
-
-builder.Logging.AddConfiguration(hostJsonLoggingSection);
-
 // Logging to Application Insights
 
 builder.Services

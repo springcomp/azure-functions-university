@@ -19,10 +19,22 @@
       "line": 9
     },
     {
-      "title": "Configuring the log levels",
+      "title": "Configuring default logging levels for the Functions Runtime host",
       "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/host.json",
-      "description": "The Functions Runtime host uses the `host.json` file to configure configure logging for its own activity, including the behaviour of your input bindings.\r\n\r\nIn this lesson, were are also sharing the `host.json` log configuration for the worker process itself. That’s where you define the log level associated with each category.",
+      "description": "The Functions Runtime host uses the `host.json` file to configure logging for its own activity, including the behaviour of your input bindings.",
       "line": 12 
+    },
+    {
+      "title": "Configuring default log levels for the Isolated Worker process",
+      "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/appsettings.json",
+      "description": "The Isolated Worker process uses is own – separate – `appsettings.json` configuration file to configure logging.\r\n\r\nThat’s where you define the log level associated with each category.",
+      "line": 4
+    },
+    {
+      "title": "Copying the `appsettings.json` to the output folder",
+      "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/AzFuncUni.Logging.csproj",
+      "description": "To register the `appsettings.json` as the source of configuration for the worker process, this file needs to be copied to the output folder alonside your compiled binaries for the worker process.",
+      "line": 21 
     },
     {
       "title": "Installing Application Insights dependencies",
@@ -43,22 +55,16 @@
       "line": 6
     },
     {
-      "title": "Reading and configuring log levels and categories",
-      "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/Program.cs",
-      "description": "Those instructions load the `logging` section from the `host.json` configuration file into a temporary variable.Then, passing this variable to `Logging.AddConfiguration()` configures log levels and categories accordingly.",
-      "line": 19
-    },
-    {
       "title": "Logging to Application Insights",
       "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/Program.cs",
       "description": "Those instructions enable logging to ApplicationInsights.\r\n\r\nThe `AddApplicationInsightsTelemetryWorkerService` method enables connection to Application Insights from _worker_ processes such as non-HTTP workloads, background tasks and console applications and is not specific to Function Apps.\r\n\r\nThe `ConfigureFunctionsApplicationInsights` method is a simple method provided by the Azure Functions .NET Worker SDK to properly setup the Function App for logging to Application Insights.",
-      "line": 25
+      "line": 17
     },
     {
       "title": "Remove logging constraints for debugging purposes",
       "file": "../../../src/dotnet8/logging/AzFuncUni.Logging/Program.cs",
       "description": "In order to help reduce cost of your cloud infrastructure, the Application Insights SDK adds a default logging filter that instructs `ILogger` to capture logs with a severity of `Warning` or more.\r\n\r\nIn this lesson, that rule is removed so that logging using lower levels, such as `Information` can be sent and recorded into Application Insights.",
-      "line": 34 
+      "line": 28 
     },
     {
       "title": "Selecting a category for logging",

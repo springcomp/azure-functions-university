@@ -9,8 +9,7 @@
       "enableLiveMetrics": true
     },
     "logLevel": {
-      "default": "Warning",
-      "AzFuncUni.Logging.HelloWorldHttpTrigger": "Information"
+      "default": "Warning"
     }
   }
 }

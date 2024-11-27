@@ -99,9 +99,10 @@ file and relies entirely on environment variables and application settings in Az
 in this lesson, however, it is often desirable to use a separate file for the log configuration.
 
 As your isolated worker process runs – as its name suggests – in a separate process from the host,
-it needs its own file to store its own settings and configurations for logging. In this lesson, the
-program will load the log (a subset of) the configuration from the `host.json` file,
-making it a shared file for both the host and the worker process itself.
+it needs its own file to store its own settings and configurations for logging. By default, if
+a file named `appsettings.json` is present in the output folder, it can automatically registered
+as a source of configuration for the worker. Additionally, the log levels and categories
+can be automatically configured from the `Logging/LogLevel` configuration section.
 
 In the following section, you will learn the basics of _Application Insights_ and its _Live Metrics_ dashboard.
 
@@ -138,13 +139,40 @@ In the following section, you will learn the basics of _Application Insights_ an
             "enableLiveMetrics": true
         },
         "logLevel": {
-            "default": "Trace"
+            "default": "Warning"
         }
     }
 }
 ```
 
-Our changes enable integration with the _Live Metrics_ dashboard associated with the _Application Insights_ resource that we will refer to from now on as “App Insights”, for short. We also have lowered the default _Log Level_ to `Trace` so that virtually every log emitted from the application goes out unfiltered.
+Our changes enable integration with the _Live Metrics_ dashboard associated with the _Application Insights_ resource that we will refer to from now on as “App Insights”, for short.
+
+6. At the root of your project, create a new file named `appsettings.json` with the following content:
+
+```json
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Trace",
+        }
+    }
+}
+```
+
+> 📝 **Tip** - Please, make sure to name the file `appsettings.json` exactly.
+
+7. Open the `AzFuncUni.Logging.csproj` project file, locate the `<None Update="host.json">` XML start element
+somewhat towards the end of the file and add the following – mostly identical section for `appsettings.json` like so:
+
+```xml
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+```
+
+> 📝 **Tip** - Please, note that this section is very similar to the one that copies the `host.json` file to the output folder.
+
+The `appsettings.json` configuration file defines the default level for logging to `Trace` which allows virtually all logs emitted from your worker process to be sent to App Insights.
 
 However, logging to App Insights is not enabled by default.
 
@@ -152,7 +180,7 @@ Furthermore, in an effort to help manage your infrastructure costs efficiently, 
 
 Logging to Application Insights using lower severity requires an explicit override.
 
-6. To fix this, install the [required packages](https://learn.microsoft.com/fr-fr/azure/azure-functions/dotnet-isolated-process-guide?tabs=hostbuilder%2Cwindows#install-packages) as follows:
+8. To fix this, install the [required packages](https://learn.microsoft.com/fr-fr/azure/azure-functions/dotnet-isolated-process-guide?tabs=hostbuilder%2Cwindows#install-packages) as follows:
 
     ```pwsh
     dotnet add package Microsoft.ApplicationInsights.WorkerService
@@ -161,7 +189,7 @@ Logging to Application Insights using lower severity requires an explicit overri
 
     > 📝 **Tip** - The `Microsoft.ApplicationInsights.WorkerService` adjusts logging behavior of the worker (_i.e_ your Function App) to no longer emit logs through the host application (_i.e_ the Functions Runtime host controlling your Function App). Once installed, logs are sent directly to application insights from the worker process instead.
 
-7. Open the `Program.cs` and add some using directives at the top of the file:
+9. Open the `Program.cs` and add some using directives at the top of the file:
 
     ```c#
     using Microsoft.Azure.Functions.Worker;
@@ -172,7 +200,7 @@ Logging to Application Insights using lower severity requires an explicit overri
     using Microsoft.Extensions.Logging;
     ```
 
-8. Further down in `Program.cs`, replace the commented code with the relevant portion of the code.
+10. Further down in `Program.cs`, replace the commented code with the relevant portion of the code.
 
     *Replace*
 
@@ -186,15 +214,6 @@ Logging to Application Insights using lower severity requires an explicit overri
     *With*
 
     ```c#
-    // Reading and configuring log levels and categories
-    
-    var hostJsonLoggingSection = new ConfigurationBuilder()
-        .AddJsonFile("host.json")
-        .Build()
-        .GetSection("logging");
-    
-    builder.Logging.AddConfiguration(hostJsonLoggingSection);
-    
     // Logging to Application Insights
     
     builder.Services
@@ -214,17 +233,17 @@ Logging to Application Insights using lower severity requires an explicit overri
         });
     ```
 
-9. Compile and run the application again.
+11. Compile and run the application again.
 
-10. From the Azure Portal, navigate to App Insights and display the _Live Metrics_ dashboard. You can find `Live Metrics` as one of the options available on the left pane, under the `Investigate` topic.
+12. From the Azure Portal, navigate to App Insights and display the _Live Metrics_ dashboard. You can find `Live Metrics` as one of the options available on the left pane, under the `Investigate` topic.
 
-Wait a couple dozen of seconds for the web page to refresh and display the dashboard.
+Wait for ten to twenty seconds for the web page to refresh and display the dashboard.
 
 > 📝 **Tip** - Some ad blockers are known to prevent the dashboard from displaying. If you have μBlock₀, you may see a `Data is temporarily inaccessible` red banner, for instance. Make sure to disable your ad blocker for the _Live Metrics_ page to display properly.
 
 Once the dashboard displays, notice that your machine is listed as one of the servers currently connected to App Insights.
 
-11. On your local machine, call the HTTP-triggered function a couple of times.
+13. On your local machine, call the HTTP-triggered function a couple of times.
 
     ```http
     POST http://localhost:7071/api/HelloWorldHttpTrigger
@@ -240,7 +259,7 @@ Details from the selected log are displayed on the lower right pane. In particul
 
 Along with their messages, the _Severity Level_ and log _Category_ are amongst the most important properties from the collected logs. In the next section, you will dive into those properties in a bit more details.
 
-12. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
+14. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
 
 ## 3. Log levels and categories
 
