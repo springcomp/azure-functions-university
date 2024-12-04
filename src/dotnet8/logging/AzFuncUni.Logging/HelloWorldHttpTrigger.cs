@@ -7,16 +7,14 @@ namespace AzFuncUni.Logging
 {
     public class HelloWorldHttpTrigger
     {
-        private readonly ILogger<HelloWorldHttpTrigger> _logger;
-
-        public HelloWorldHttpTrigger(ILogger<HelloWorldHttpTrigger> logger)
-        {
-            _logger = logger;
-        }
-
         [Function("HelloWorldHttpTrigger")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
+        public IActionResult Run(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req,
+            FunctionContext context
+        )
         {
+            ILogger _logger = context.GetLogger(nameof(HelloWorldHttpTrigger));
+
             _logger.LogInformation("C# HTTP trigger function processed a request.");
             return new OkObjectResult("Welcome to Azure Functions!");
         }

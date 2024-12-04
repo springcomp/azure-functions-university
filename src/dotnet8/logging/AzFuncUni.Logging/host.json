@@ -9,7 +9,9 @@
       "enableLiveMetrics": true
     },
     "logLevel": {
-      "default": "Warning"
+      "default": "Warning",
+      "Host.Results": "Information",
+      "Function": "Information"
     }
   }
 }

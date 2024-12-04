@@ -139,13 +139,16 @@ In the following section, you will learn the basics of _Application Insights_ an
             "enableLiveMetrics": true
         },
         "logLevel": {
-            "default": "Warning"
+            "default": "Warning",
+            "Function": "Information",
+            "Host.Results": "Information"
         }
     }
 }
 ```
 
 Our changes enable integration with the _Live Metrics_ dashboard associated with the _Application Insights_ resource that we will refer to from now on as “App Insights”, for short.
+It also enables [monitoring the function execution](https://learn.microsoft.com/en-us/azure/azure-functions/configure-monitoring?tabs=v2#configure-log-levels) when hosted on Azure through the **Application Insights** and **Funcion Monitors** tabs.
 
 6. At the root of your project, create a new file named `appsettings.json` with the following content:
 
@@ -161,8 +164,7 @@ Our changes enable integration with the _Live Metrics_ dashboard associated with
 
 > 📝 **Tip** - Please, make sure to name the file `appsettings.json` exactly.
 
-7. Open the `AzFuncUni.Logging.csproj` project file, locate the `<None Update="host.json">` XML start element
-somewhat towards the end of the file and add the following – mostly identical section for `appsettings.json` like so:
+7. Open the `AzFuncUni.Logging.csproj` project file, locate the `<None Update="host.json">` XML start element somewhat towards the end of the file, and add the following – mostly identical section for `appsettings.json` like so:
 
 ```xml
     <None Update="appsettings.json">
@@ -192,6 +194,7 @@ Logging to Application Insights using lower severity requires an explicit overri
 9. Open the `Program.cs` and add some using directives at the top of the file:
 
     ```c#
+    using System.Reflection;
     using Microsoft.Azure.Functions.Worker;
     using Microsoft.Azure.Functions.Worker.Builder;
     using Microsoft.Extensions.Configuration;
@@ -200,7 +203,27 @@ Logging to Application Insights using lower severity requires an explicit overri
     using Microsoft.Extensions.Logging;
     ```
 
-10. Further down in `Program.cs`, replace the commented code with the relevant portion of the code.
+10. In `Program.cs` load the configuration file and configure log levels and categories.
+
+    Add the following code immediately after the call to
+    `builder.ConfigureFunctionsWebApplication()`.
+
+    ```c#
+    // Register log levels and categories
+
+    var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+    var appSettingsLoggingSection = new ConfigurationBuilder()
+        .SetBasePath(basePath!) // required on Linux
+        .AddJsonFile("appsettings.json") // first read configuration file
+        .AddEnvironmentVariables() // then override using app settings
+        .Build()
+        .GetSection("Logging")
+        ;
+
+    ```
+
+11. Further down in `Program.cs`, enabled logging to App Insights by replacing the commented code with the relevant portion of the code.
 
     *Replace*
 
@@ -233,9 +256,17 @@ Logging to Application Insights using lower severity requires an explicit overri
         });
     ```
 
-11. Compile and run the application again.
+12. Open the `HelloWorldHttpTrigger.cs` file and update its contents.
 
-12. From the Azure Portal, navigate to App Insights and display the _Live Metrics_ dashboard. You can find `Live Metrics` as one of the options available on the left pane, under the `Investigate` topic.
+    Replace the full contents of the file with the following code:
+
+    ```c#
+
+    ```
+
+13. Compile and run the application again.
+
+14. From the Azure Portal, navigate to App Insights and display the _Live Metrics_ dashboard. You can find `Live Metrics` as one of the options available on the left pane, under the `Investigate` topic.
 
 Wait for ten to twenty seconds for the web page to refresh and display the dashboard.
 
@@ -243,7 +274,7 @@ Wait for ten to twenty seconds for the web page to refresh and display the dashb
 
 Once the dashboard displays, notice that your machine is listed as one of the servers currently connected to App Insights.
 
-13. On your local machine, call the HTTP-triggered function a couple of times.
+15. On your local machine, call the HTTP-triggered function a couple of times.
 
     ```http
     POST http://localhost:7071/api/HelloWorldHttpTrigger
@@ -255,11 +286,11 @@ From the right pane, locate and click on one of the recorded logs, with the foll
 
 Details from the selected log are displayed on the lower right pane. In particular, notice the following property:
 
-- `CategoryName`: `AzFuncUni.Logging.HelloWorldHttpTrigger`
+- `CategoryName`: `HelloWorldHttpTrigger`
 
 Along with their messages, the _Severity Level_ and log _Category_ are amongst the most important properties from the collected logs. In the next section, you will dive into those properties in a bit more details.
 
-14. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
+16. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
 
 ## 3. Log levels and categories
 
@@ -317,7 +348,7 @@ Before running the code from your functions, the Functions Runtime first runs th
 For this reason each function decorated using the [`FunctionAttribute`](https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide?tabs=hostbuilder%2Cwindows#methods-recognized-as-functions) class emits logs associated with the following category hierarchy:
 
 - `Functions.<function-name>`: category associated with logs from triggers and bindings used by your function.
-- `<function-class-qualified-name>` category associated with logs from your code using the `ILogger` instance initialized in the constructor of your function class.
+- `<custom-function-category>` category associated with logs from your code using the `ILogger` instance obtained from your function method’s `FunctionContext` parameter.
 
 In this exercise, you will discover log categories and learn how to filter log output based upon categories using appropriate log levels.
 
@@ -371,7 +402,7 @@ In this exercise, you will discover log categories and learn how to filter log o
     "logLevel": {
         "default": "Warning",
         "Functions.HelloWorldHttpTrigger": "Warning",
-        "AzFuncUni.Logging.HelloWorldHttpTrigger": "Information"
+        "HelloWorldHttpTrigger": "Information"
     }
     ```
 
@@ -390,7 +421,7 @@ In this exercise, you will discover log categories and learn how to filter log o
     | order by customDimensions_CategoryName
     ```
 
-    > 🔎 **Observation** - After a few minutes, you should see a dramatic reduction in the amount of categories under which your application logs. In fact, given enough time, only logs associated with the `AzFuncUni.Logging.HelloWorldHttpTrigger` category hierarchy should be emitted.
+    > 🔎 **Observation** - After a few minutes, you should see a dramatic reduction in the amount of categories under which your application logs. In fact, given enough time, only logs associated with the `HelloWorldHttpTrigger` category should be emitted.
 
 10. Hit <kbd>Ctrl</kbd>+<kbd>C</kbd> from the Console of the running application to stop its execution.
 
@@ -418,7 +449,7 @@ In this exercise, you will discover log categories and learn how to filter log o
             "AzureFunctionsJobHost__Logging__LogLevel__default": "Debug",
             "AzureFunctionsJobHost__Logging__LogLevel__Function__HelloWorldHttpTrigger": "Trace",
             "Logging__LogLevel__Default": "Warning",
-            "Logging__LogLevel__AzFuncUni__Logging__HelloWorldHttpTrigger": "Trace"
+            "Logging__LogLevel__HelloWorldHttpTrigger": "Trace"
         }
     }
     ```

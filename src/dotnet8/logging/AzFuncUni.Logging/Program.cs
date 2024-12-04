@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +9,20 @@ using Microsoft.Extensions.Logging;
 var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
+
+// Register log levels and categories
+
+var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+var appSettingsLoggingSection = new ConfigurationBuilder()
+    .SetBasePath(basePath!) // required on Linux
+    .AddJsonFile("appsettings.json") // first read configuration file
+    .AddEnvironmentVariables() // then override using app settings
+    .Build()
+    .GetSection("Logging")
+    ;
+
+builder.Configuration.AddConfiguration(appSettingsLoggingSection);
 
 // Logging to Application Insights
 
