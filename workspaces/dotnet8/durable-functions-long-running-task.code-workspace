@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "../../lessons/dotnet8/durable-functions/long-running",
+			"name": "Long Running Operations with Durable Functions Lesson"
+		},
+		{
+			"path": "../../src/dotnet8/durable-functions/long-running",
+			"name": "Lesson Source Code"
+		},
+	],
+	"settings": {
+		"debug.internalConsoleOptions": "neverOpen"
+	},
+	"extensions": {
+		"recommendations": [
+			"DurableFunctionsMonitor.durablefunctionsmonitor",
+			"ms-azuretools.vscode-azurefunctions",
+			"ms-dotnettools.csharp"
+		]
+	}
+}
