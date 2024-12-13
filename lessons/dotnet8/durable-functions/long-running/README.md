@@ -2,7 +2,9 @@
 
 ## Goal 🎯
 
-The goal of this lesson
+The goal of this lesson is to learn the concept of _Durable Functions_. At its core,
+The Durable Functions framework introduces the concept of stateful _orchestrations_
+which run one or more stateless _activities_. By managing state, checkpoints and restarts, the framework lets you focus on writing your business logic.
 
 This lesson consists of the following exercises:
 
@@ -10,7 +12,7 @@ This lesson consists of the following exercises:
 |-|-
 |0|[Prerequisites](#0-prerequisites)
 |1|[Creating a function app](#1-creating-a-function-app)
-|0|[]()
+|1|[Function chaining](#2-function-chaining)
 |0|[Homework](#0-homework)
 |0|[More info](#0-more-info)
 
@@ -69,6 +71,62 @@ This exercise is a condensed version of the
     GET http://localhost:7071/api/HelloWorldHttpTrigger
     ```
     > 🔎 **Observation** - You should receive a `200 OK` success response.
+
+
+## 1 - Function Chaining
+
+### Overview
+
+Azure Functions offer a functions-as-a-service compute infrastructure that
+lets users develop, run, host and manage functions in a highly scalable way.
+
+While functions are a great way to implement a _serverless_ architecture,
+most business processes will need to be composed with − and, somehow "orchestrate" − a
+set of multiple functions to achieve the desired result.
+
+Designing such highly-scalable, fault-tolerant business processes has its own
+set of challenges that can best be met by adhering to the following rough guidelines:
+
+- Favor stateless "pure" functions.
+
+
+In the functional programming paradigm, a "pure" function is a stateless function
+that does not have side effects. Given a know set of input parameters, a "pure"
+function will always return the same result. Therefore, such functions offer many
+benefits such as being easier to test, easier to compose and easier to include in
+parallel workloads.
+
+Writing stateless functions often leads to more fine-grained functions that
+adhere to the _Single Responsibility Principle_, which makes them also easier
+to reason about.
+
+The Durable Functions extension framework 
+
+https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp-inproc
+
+TODO: recap and summarize the excellent introduction made in the TypeScript function
+https://github.com/marcduiker/azure-functions-university/pull/252/files#diff-018a585586ec9c906cbd34dd56e7b917633e3fff277b580a2c3738863a9561f0
+
+-> serverless + functions as a service
+-> compose functions to create a more complex workflow
+-> needs storage, persistence 
+
+https://en.wikipedia.org/wiki/Function_as_a_service
+
+-> durable functions abstract away the complexity
+-> lets authors focus on writing activities
+
+https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=in-process%2Cnodejs-v3%2Cv1-model&pivots=csharp#chaining
+
+![](https://learn.microsoft.com/en-us/azure/azure-functions/durable/media/durable-functions-concepts/function-chaining.png)
+
+### Steps
+
+In this lesson, you will learn how to write a simple orchestration that
+invokes two activities in sequence. The output result from the first
+activity is required when invoking the second activity, thus demonstrating
+the function chaining pattern.
+
 
 ## 0 - Homework
 
