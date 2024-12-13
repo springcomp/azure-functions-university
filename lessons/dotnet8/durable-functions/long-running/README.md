@@ -108,9 +108,11 @@ a trigger message into a queue.
 ![](https://learn.microsoft.com/en-us/azure/azure-functions/durable/media/durable-functions-concepts/function-chaining.png)
 
 Building a workflow that adheres to these guidlelines by hand is represents
-a significant undertaking.
+a significant undertaking. Although most cloud queue solutions help building
+resilient processes, the developer still has to think about error handling
+and implement patterns such as dead-lettering.
 
-The Durable Functions extension framework 
+The Durable Functions extension framework abstracts away …
 
 https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp-inproc
 
