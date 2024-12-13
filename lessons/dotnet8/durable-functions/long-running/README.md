@@ -81,14 +81,15 @@ Azure Functions offer a functions-as-a-service compute infrastructure that
 lets users develop, run, host and manage functions in a highly scalable way.
 
 While functions are a great way to implement a _serverless_ architecture,
-most business processes will need to be composed with − and, somehow "orchestrate" − a
+most business processes will need to be composed with − and, somehow, "orchestrate" − a
 set of multiple functions to achieve the desired result.
 
 Designing such highly-scalable, fault-tolerant business processes has its own
 set of challenges that can best be met by adhering to the following rough guidelines:
 
-- Favor stateless "pure" functions.
-
+- Favoring stateless "pure" functions.
+- Using checkpoints between steps in a business process.
+- Scheduling subsequent steps by sending a message into a queue.
 
 In the functional programming paradigm, a "pure" function is a stateless function
 that does not have side effects. Given a know set of input parameters, a "pure"
@@ -99,6 +100,15 @@ parallel workloads.
 Writing stateless functions typically favors more fine-grained functions that
 adhere to the _Single Responsibility Principle_, which makes them also easier
 to reason about.
+
+Checkpoints between steps in the business process are typically handled by
+persisting state in durable storage and scheduling subsequent steps by placing
+a trigger message into a queue.
+
+![](https://learn.microsoft.com/en-us/azure/azure-functions/durable/media/durable-functions-concepts/function-chaining.png)
+
+Building a workflow that adheres to these guidlelines by hand is represents
+a significant undertaking.
 
 The Durable Functions extension framework 
 
@@ -117,8 +127,6 @@ https://en.wikipedia.org/wiki/Function_as_a_service
 -> lets authors focus on writing activities
 
 https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=in-process%2Cnodejs-v3%2Cv1-model&pivots=csharp#chaining
-
-![](https://learn.microsoft.com/en-us/azure/azure-functions/durable/media/durable-functions-concepts/function-chaining.png)
 
 ### Steps
 
