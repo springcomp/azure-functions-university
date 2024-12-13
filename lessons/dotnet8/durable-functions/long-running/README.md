@@ -96,7 +96,7 @@ function will always return the same result. Therefore, such functions offer man
 benefits such as being easier to test, easier to compose and easier to include in
 parallel workloads.
 
-Writing stateless functions often leads to more fine-grained functions that
+Writing stateless functions typically favors more fine-grained functions that
 adhere to the _Single Responsibility Principle_, which makes them also easier
 to reason about.
 
